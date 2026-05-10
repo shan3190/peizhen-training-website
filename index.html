@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>陪诊师培训 - 专业陪诊师在线学习平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .scroll-smooth {
+                scroll-behavior: smooth;
+            }
+            .progress-ring {
+                transform: rotate(-90deg);
+            }
+            .progress-bar-animated {
+                background: linear-gradient(90deg, #2563EB, #10B981);
+                background-size: 200% 100%;
+                animation: shimmer 2s infinite;
+            }
+            @keyframes shimmer {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+            }
+        }
+    </style>
+</head>
+<body class="scroll-smooth font-sans bg-gray-50 text-gray-800">
+    <!-- 导航栏 -->
+    <nav id="navbar" class="fixed w-full bg-white/95 backdrop-blur-sm shadow-sm z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fa fa-heartbeat text-primary text-2xl mr-2"></i>
+                    <span class="text-xl font-bold text-primary">陪诊师培训</span>
+                </div>
+                
+                <!-- 桌面导航 -->
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#home" class="text-gray-700 hover:text-primary transition-colors font-medium">首页</a>
+                    <a href="#courses" class="text-gray-700 hover:text-primary transition-colors font-medium">课程体系</a>
+                    <a href="#features" class="text-gray-700 hover:text-primary transition-colors font-medium">核心优势</a>
+                    <a href="questions.html" id="nav-questions" class="text-gray-700 hover:text-primary transition-colors font-medium">精选题库</a>
+                    <a href="exam.html" id="nav-exam" class="text-gray-700 hover:text-primary transition-colors font-medium">在线考试</a>
+                    <!-- 进度徽章 -->
+                    <span id="navProgressBadge" class="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1 rounded-full text-sm font-medium cursor-pointer" onclick="showProgressModal()">
+                        <i class="fa fa-spinner fa-pulse mr-1"></i><span id="navProgressText">0%</span>
+                    </span>
+                    <a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">登录</a>
+                    <a href="#" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium transition-colors">注册</a>
+                </div>
+                
+                <!-- 移动端菜单按钮 -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-gray-700 hover:text-primary focus:outline-none">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-3 space-y-3">
+                <a href="#home" class="block py-2 text-gray-700 hover:text-primary">首页</a>
+                <a href="#courses" class="block py-2 text-gray-700 hover:text-primary">课程体系</a>
+                <a href="#features" class="block py-2 text-gray-700 hover:text-primary">核心优势</a>
+                <a href="questions.html" class="block py-2 text-gray-700 hover:text-primary">精选题库</a>
+                <a href="exam.html" class="block py-2 text-gray-700 hover:text-primary">在线考试</a>
+                <div class="pt-2 border-t mt-2">
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-gray-600">学习进度</span>
+                        <span id="mobileProgressText" class="text-primary font-medium">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="mobileProgressBar" class="bg-primary h-2 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                    <button onclick="resetProgress()" class="mt-3 w-full text-center text-sm text-red-500 hover:text-red-600">
+                        <i class="fa fa-refresh mr-1"></i>重置学习进度
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero区域 -->
+    <section id="home" class="py-12 md:py-16 bg-gradient-to-r from-blue-50 to-indigo-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <!-- 左侧：大图 -->
+                    <div class="relative">
+                        <img src="./images/hero.png" alt="陪诊师培训" class="rounded-2xl shadow-2xl w-full h-auto object-cover">
+                    </div>
+                    <!-- 右侧：数据统计 2x2 -->
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-md text-center card-hover">
+                            <div class="text-3xl md:text-4xl font-bold text-primary mb-2">6</div>
+                            <p class="text-gray-600">核心课程</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md text-center card-hover">
+                            <div class="text-3xl md:text-4xl font-bold text-secondary mb-2">40</div>
+                            <p class="text-gray-600">学习时长</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md text-center card-hover">
+                            <div class="text-3xl md:text-4xl font-bold text-accent mb-2">200</div>
+                            <p class="text-gray-600">题库题目</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md text-center card-hover">
+                            <div class="text-3xl md:text-4xl font-bold text-dark mb-2">1000+</div>
+                            <p class="text-gray-600">培训学员</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 课程体系 -->
+    <section id="courses" class="py-16 md:py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 md:mb-16">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">课程体系</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">6门核心课程，系统化学习陪诊师必备技能，从基础理论到实战技能全面覆盖</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- 课程卡片1：陪诊服务概述 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover relative">
+                    <div class="h-40 overflow-hidden">
+                        <img src="./images/course1.png" alt="陪诊服务概述" class="w-full h-full object-cover">
+                    </div>
+                    <!-- 进度指示器 -->
+                    <div id="progress-1" class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow">
+                        <span class="text-gray-500">学习中</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">课程1：陪诊服务概述</h3>
+                        <p class="text-gray-600 text-sm mb-4">行业起源发展、职业定位、服务对象分析、市场需求与就业前景、职业发展路径，含3个真实行业案例</p>
+                        <!-- 章节进度条 -->
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>章节进度</span>
+                                <span id="section-progress-1">0/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div id="section-bar-1" class="bg-primary h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">5个章节 + 3个案例</span>
+                            <a href="./course.html?id=1" class="text-primary hover:text-primary/80 font-medium text-sm">查看详情 <i class="fa fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片2：法律法规 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover relative">
+                    <div class="h-40 overflow-hidden">
+                        <img src="./images/course2.png" alt="法律法规" class="w-full h-full object-cover">
+                    </div>
+                    <div id="progress-2" class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow">
+                        <span class="text-gray-500">学习中</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">课程2：法律法规</h3>
+                        <p class="text-gray-600 text-sm mb-4">医疗卫生法规、患者权益保护、个人信息隐私、医疗纠纷处理、法律边界防范、合同签订，含5个法律案例</p>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>章节进度</span>
+                                <span id="section-progress-2">0/6</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div id="section-bar-2" class="bg-primary h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">6个章节 + 5个案例</span>
+                            <a href="./course.html?id=2" class="text-primary hover:text-primary/80 font-medium text-sm">查看详情 <i class="fa fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片3：职业礼仪 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover relative">
+                    <div class="h-40 overflow-hidden">
+                        <img src="./images/course3.png" alt="职业礼仪" class="w-full h-full object-cover">
+                    </div>
+                    <div id="progress-3" class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow">
+                        <span class="text-gray-500">学习中</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">课程3：职业礼仪</h3>
+                        <p class="text-gray-600 text-sm mb-4">职业形象与着装、沟通礼仪与话术、医患沟通注意事项、多场景礼仪要求、特殊人群沟通，含4个礼仪案例</p>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>章节进度</span>
+                                <span id="section-progress-3">0/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div id="section-bar-3" class="bg-primary h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">5个章节 + 4个案例</span>
+                            <a href="./course.html?id=3" class="text-primary hover:text-primary/80 font-medium text-sm">查看详情 <i class="fa fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片4：医疗常识 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover relative">
+                    <div class="h-40 overflow-hidden">
+                        <img src="./images/course4.png" alt="医疗常识" class="w-full h-full object-cover">
+                    </div>
+                    <div id="progress-4" class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow">
+                        <span class="text-gray-500">学习中</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">课程4：医疗常识</h3>
+                        <p class="text-gray-600 text-sm mb-4">人体结构与生理、常见疾病认知预防、检查项目解读、常用药物知识、化验单阅读入门，含6个医疗知识案例</p>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>章节进度</span>
+                                <span id="section-progress-4">0/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div id="section-bar-4" class="bg-primary h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">5个章节 + 6个案例</span>
+                            <a href="./course.html?id=4" class="text-primary hover:text-primary/80 font-medium text-sm">查看详情 <i class="fa fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片5：服务流程 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover relative">
+                    <div class="h-40 overflow-hidden">
+                        <img src="./images/course5.png" alt="服务流程" class="w-full h-full object-cover">
+                    </div>
+                    <div id="progress-5" class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow">
+                        <span class="text-gray-500">学习中</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">课程5：服务流程</h3>
+                        <p class="text-gray-600 text-sm mb-4">接单准备、客户对接需求评估、诊前准备、就诊全流程、诊后跟进、特殊情况处理，含8个服务流程实战案例</p>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>章节进度</span>
+                                <span id="section-progress-5">0/6</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div id="section-bar-5" class="bg-primary h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">6个章节 + 8个案例</span>
+                            <a href="./course.html?id=5" class="text-primary hover:text-primary/80 font-medium text-sm">查看详情 <i class="fa fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片6：急救技能 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover relative">
+                    <div class="h-40 overflow-hidden">
+                        <img src="./images/course6.png" alt="急救技能" class="w-full h-full object-cover">
+                    </div>
+                    <div id="progress-6" class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow">
+                        <span class="text-gray-500">学习中</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">课程6：急救技能</h3>
+                        <p class="text-gray-600 text-sm mb-4">突发情况识别、心肺复苏CPR操作、常见急症处理、外伤急救、危重症识别、AED与急救包使用，含7个急救案例</p>
+                        <div class="mb-3">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>章节进度</span>
+                                <span id="section-progress-6">0/6</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div id="section-bar-6" class="bg-primary h-1.5 rounded-full transition-all" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">6个章节 + 7个案例</span>
+                            <a href="./course.html?id=6" class="text-primary hover:text-primary/80 font-medium text-sm">查看详情 <i class="fa fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心优势 -->
+    <section id="features" class="py-16 md:py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 md:mb-16">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">核心优势</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">系统化、标准化、专业化的培训体系，助您快速成长为专业陪诊师</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                
+                
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-tasks text-accent text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-bold mb-2">进度追踪</h3>
+                        <p class="text-gray-600 text-sm">学习进度可视化，断点续学，实时掌握学习状态和完成度</p>
+                    </div>
+                </div>
+                
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-question-circle text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-bold mb-2">章节测验</h3>
+                        <p class="text-gray-600 text-sm">每个课程配套章节测验，巩固学习成果，及时查漏补缺</p>
+                    </div>
+                </div>
+                
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-pencil-square-o text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-bold mb-2">在线考试</h3>
+                        <p class="text-gray-600 text-sm">200道库，支持自动评分，模拟真实考试环境，检验学习成果</p>
+                    </div>
+                </div>
+                
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-certificate text-indigo-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-bold mb-2">证书颁发</h3>
+                        <p class="text-gray-600 text-sm">完成培训并通过考试，获得培训证书，开启职业新篇章</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 精选题库 -->
+    <section id="exam" class="py-16 md:py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 md:mb-16">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">精选题库</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">150道精选题库，覆盖基础理论、服务规范、医疗常识等核心考点</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-dot-circle-o text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">80道</h3>
+                    <p class="text-gray-600">单选题</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-check-square-o text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">40道</h3>
+                    <p class="text-gray-600">多选题</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-exchange text-accent text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">30道</h3>
+                    <p class="text-gray-600">判断题</p>
+                </div>
+            </div>
+            
+            <!-- 题库预览 -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-primary text-white px-6 py-4">
+                    <h3 class="font-bold text-lg">题库预览 - 基础理论类</h3>
+                </div>
+                <div class="p-6 space-y-8">
+                    <!-- 题目1 -->
+                    <div class="question-item">
+                        <p class="font-medium mb-3"><span class="text-primary font-bold">Q1.</span> 陪诊师的主要服务对象是？</p>
+                        <div class="space-y-2 ml-4">
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center mr-2 text-sm">A</span>
+                                <span>仅老年患者</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full bg-green-100 border border-green-500 text-green-700 flex items-center justify-center mr-2 text-sm font-medium">B</span>
+                                <span class="text-green-700 font-medium">需要就医的患者及家属 <i class="fa fa-check ml-2"></i></span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center mr-2 text-sm">C</span>
+                                <span>住院患者</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center mr-2 text-sm">D</span>
+                                <span>仅急诊患者</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 题目2 -->
+                    <div class="question-item">
+                        <p class="font-medium mb-3"><span class="text-primary font-bold">Q2.</span> 陪诊师区别于导医的关键在于？</p>
+                        <div class="space-y-2 ml-4">
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center mr-2 text-sm">A</span>
+                                <span>熟悉医院环境</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full bg-green-100 border border-green-500 text-green-700 flex items-center justify-center mr-2 text-sm font-medium">B</span>
+                                <span class="text-green-700 font-medium">提供全程一对一人文关怀服务 <i class="fa fa-check ml-2"></i></span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center mr-2 text-sm">C</span>
+                                <span>帮助挂号</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center mr-2 text-sm">D</span>
+                                <span>取药送检</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 题目3 -->
+                    <div class="question-item">
+                        <p class="font-medium mb-3"><span class="text-primary font-bold">Q3.</span> （判断题）陪诊师可以代替患者签署医疗知情同意书。</p>
+                        <div class="space-y-2 ml-4">
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center mr-2 text-sm">A</span>
+                                <span>正确</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-6 h-6 rounded-full bg-red-100 border border-red-500 text-red-700 flex items-center justify-center mr-2 text-sm font-medium">B</span>
+                                <span class="text-red-700 font-medium">错误 <i class="fa fa-times ml-2"></i></span>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-sm mt-2 ml-4"><i class="fa fa-info-circle mr-1"></i> 解析：知情同意书必须由患者本人或法定代理人签署，陪诊师不能代替。</p>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 border-t text-center">
+                    <a href="questions.html" id="preview-questions-btn" class="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-lg inline-block mr-3">
+                        <i class="fa fa-book mr-2"></i>进入题库学习
+                    </a>
+                    <a href="exam.html" id="preview-exam-btn" class="bg-secondary hover:bg-secondary/90 text-white font-medium px-6 py-3 rounded-lg inline-block">
+                        进入在线考试系统 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA区域 -->
+    <section class="py-16 md:py-20 bg-gradient-to-r from-primary to-blue-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">开始您的陪诊师职业之旅</h2>
+                    <p class="text-white/80 mb-8">加入我们的专业培训计划，系统学习专业技能，开启新的职业发展道路</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#" class="bg-white text-primary hover:bg-gray-100 font-medium px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all text-center">
+                            获取证书
+                        </a>
+                        <a href="#" class="bg-white/10 hover:bg-white/20 text-white font-medium px-8 py-3 rounded-lg transition-all text-center">
+                            咨询详情
+                        </a>
+                    </div>
+                </div>
+                <div class="border-l border-white/20 pl-12">
+                    <h3 class="text-xl font-bold mb-6">联系我们</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <i class="fa fa-weixin text-2xl mr-4 text-green-300"></i>
+                            <div>
+                                <p class="font-medium">微信咨询</p>
+                                <p class="text-white/70 text-sm">扫码添加客服微信</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fa fa-clock-o text-2xl mr-4 text-yellow-300"></i>
+                            <div>
+                                <p class="font-medium">工作时间</p>
+                                <p class="text-white/70 text-sm">周一至周日 9:00--18:00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 证书说明 -->
+    <section id="certificate" class="py-16 md:py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 md:mb-16">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-4">证书说明与证书样本</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">完成全部课程学习并通过在线考试，即可获得专业培训证书</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- 证书说明 -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4">证书说明</h3>
+                    <div class="space-y-4 text-gray-600">
+                        <p>（此处预留2-3句话用于叙述证书相关内容，包括证书的颁发机构、证书效力、适用范围等信息）</p>
+                        <p>（第二句话介绍证书的获取条件、考试要求以及认证流程等）</p>
+                        <p>（第三句话说明证书的价值、行业认可度以及对学员职业发展的帮助）</p>
+                    </div>
+                </div>
+                
+                <!-- 证书样本 -->
+                <div>
+                    <h3 class="text-xl font-bold mb-4">证书样本</h3>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50 text-center">
+                        <div class="py-16">
+                            <i class="fa fa-certificate text-6xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-400">此处预留证书样本图片位置</p>
+                            <p class="text-gray-400 text-sm mt-2">尺寸建议：宽800px × 高600px</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="bg-gray-900 text-white">
+        <div class="h-8 bg-gradient-to-b from-white to-gray-900"></div>
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-4 gap-8">
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-heartbeat text-primary text-2xl mr-2"></i>
+                            <span class="text-xl font-bold">陪诊师培训</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">专业陪诊师在线学习平台，系统化课程体系，标准化培训流程</p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-weixin text-xl"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-weibo text-xl"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-qq text-xl"></i></a>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-lg mb-4">快速链接</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#home" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                            <li><a href="#courses" class="text-gray-400 hover:text-white transition-colors">课程体系</a></li>
+                            <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">核心优势</a></li>
+                            <li><a href="exam.html" class="text-gray-400 hover:text-white transition-colors">精选题库</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-lg mb-4">课程分类</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">基础理论</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">服务规范</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">医疗常识</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">急救技能</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">法律法规</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-lg mb-4">关于我们</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">平台介绍</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">师资团队</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学员评价</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">服务条款</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-700 mt-10 pt-8 text-center text-gray-400 text-sm">
+                    <p>&copy; 2024 陪诊师培训平台 zzpzt.cn. 保留所有权利.</p>
+                    <button onclick="resetProgress()" class="mt-3 text-gray-500 hover:text-red-400 transition-colors text-xs">
+                        <i class="fa fa-refresh mr-1"></i>重置学习进度
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 课程章节配置
+        const courseSections = {
+            1: 5, // 陪诊服务概述
+            2: 6, // 法律法规
+            3: 5, // 职业礼仪
+            4: 5, // 医疗常识
+            5: 6, // 服务流程
+            6: 6  // 急救技能
+        };
+
+        const courseNames = {
+            1: '陪诊服务概述',
+            2: '法律法规',
+            3: '职业礼仪',
+            4: '医疗常识',
+            5: '服务流程',
+            6: '急救技能'
+        };
+
+        // 页面加载时初始化进度
+        document.addEventListener('DOMContentLoaded', function() {
+            initProgress();
+        });
+
+        // 初始化进度显示
+        function initProgress() {
+            const progress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+            let totalCompleted = 0;
+            let totalSections = 0;
+
+            // 更新每个课程的进度显示
+            for (let i = 1; i <= 6; i++) {
+                const courseData = progress[`course_${i}`] || { sections: {}, completed: false };
+                const sectionCount = courseSections[i];
+                const completedSections = Object.keys(courseData.sections || {}).filter(k => courseData.sections[k]).length;
+                
+                totalSections += sectionCount;
+                totalCompleted += completedSections;
+
+                // 更新课程卡片进度
+                updateCourseCardProgress(i, completedSections, sectionCount, courseData.completed);
+            }
+
+            // 更新全局进度
+            const overallPercent = totalSections > 0 ? Math.round((totalCompleted / totalSections) * 100) : 0;
+            document.getElementById('navProgressText').textContent = overallPercent + '%';
+            document.getElementById('mobileProgressText').textContent = overallPercent + '%';
+            document.getElementById('mobileProgressBar').style.width = overallPercent + '%';
+
+            // 更新导航栏进度徽章颜色
+            const navBadge = document.getElementById('navProgressBadge');
+            if (overallPercent === 100) {
+                navBadge.className = 'bg-secondary text-white px-3 py-1 rounded-full text-sm font-medium cursor-pointer';
+                navBadge.innerHTML = '<i class="fa fa-check-circle mr-1"></i><span id="navProgressText">100%</span>';
+            }
+        }
+
+        // 更新课程卡片进度
+        function updateCourseCardProgress(courseId, completed, total, isCourseCompleted) {
+            const progressEl = document.getElementById(`progress-${courseId}`);
+            const sectionProgressEl = document.getElementById(`section-progress-${courseId}`);
+            const sectionBarEl = document.getElementById(`section-bar-${courseId}`);
+
+            if (progressEl) {
+                if (isCourseCompleted) {
+                    progressEl.innerHTML = '<span class="text-secondary"><i class="fa fa-check-circle mr-1"></i>已完成</span>';
+                    progressEl.className = 'absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow';
+                } else if (completed > 0) {
+                    progressEl.innerHTML = `<span class="text-primary">${completed}/${total}章节</span>`;
+                    progressEl.className = 'absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium shadow';
+                } else {
+                    progressEl.innerHTML = '<span class="text-gray-500">未开始</span>';
+                }
+            }
+
+            if (sectionProgressEl) {
+                sectionProgressEl.textContent = `${completed}/${total}`;
+            }
+
+            if (sectionBarEl) {
+                const percent = total > 0 ? (completed / total) * 100 : 0;
+                sectionBarEl.style.width = percent + '%';
+                if (percent === 100) {
+                    sectionBarEl.className = 'bg-secondary h-1.5 rounded-full transition-all';
+                }
+            }
+        }
+
+        // 重置进度
+        function resetProgress() {
+            if (confirm('确定要重置所有学习进度吗？此操作不可撤销。')) {
+                localStorage.removeItem('courseProgress');
+                localStorage.removeItem('allCoursesCompleted');
+                initProgress();
+                showToast('学习进度已重置');
+            }
+        }
+
+        // 显示进度详情弹窗
+        function showProgressModal() {
+            const progress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+            let completedCount = 0;
+            let totalCount = 6;
+
+            let html = '<div class="space-y-3">';
+            for (let i = 1; i <= 6; i++) {
+                const courseData = progress[`course_${i}`] || { sections: {}, completed: false };
+                const sectionCount = courseSections[i];
+                const completedSections = Object.keys(courseData.sections || {}).filter(k => courseData.sections[k]).length;
+                
+                if (courseData.completed) completedCount++;
+
+                html += `
+                    <div class="flex items-center justify-between p-3 rounded-lg ${courseData.completed ? 'bg-green-50' : 'bg-gray-50'}">
+                        <div class="flex items-center">
+                            <i class="fa ${courseData.completed ? 'fa-check-circle text-green-500' : 'fa-circle-o text-gray-400'} mr-3"></i>
+                            <span class="font-medium">课程${i}：${courseNames[i]}</span>
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            ${completedSections}/${sectionCount}章节
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+
+            const overallPercent = Math.round((completedCount / totalCount) * 100);
+            const modalHtml = `
+                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onclick="closeProgressModal(event)">
+                    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">学习进度详情</h3>
+                            <button onclick="closeProgressModal()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fa fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-600">总体进度</span>
+                                <span class="font-medium text-primary">${overallPercent}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full transition-all" style="width: ${overallPercent}%"></div>
+                            </div>
+                        </div>
+                        ${html}
+                        <div class="mt-4 pt-4 border-t text-center">
+                            <p class="text-sm text-gray-500 mb-3">完成全部6门课程后可解锁题库和考试</p>
+                            ${overallPercent < 100 ? `
+                                <p class="text-xs text-gray-400">还需完成 ${6 - completedCount} 门课程</p>
+                            ` : `
+                                <p class="text-sm text-green-600"><i class="fa fa-check-circle mr-1"></i>已解锁全部功能</p>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const modalContainer = document.createElement('div');
+            modalContainer.id = 'progressModal';
+            modalContainer.innerHTML = modalHtml;
+            document.body.appendChild(modalContainer);
+        }
+
+        function closeProgressModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('progressModal');
+            if (modal) modal.remove();
+        }
+
+        // Toast提示
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-pulse';
+            toast.innerHTML = '<i class="fa fa-check-circle mr-2 text-green-400"></i>' + message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 移动端菜单切换
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.remove('shadow-sm');
+            } else {
+                navbar.classList.remove('shadow-md');
+                navbar.classList.add('shadow-sm');
+            }
+        });
+        
+        // 点击移动端导航链接后关闭菜单
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({
+                        top: target.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
