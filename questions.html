@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精选题库 - 陪诊师培训</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .tag-active {
+            background: #2563EB;
+            color: white;
+        }
+        .filter-tag {
+            transition: all 0.2s;
+        }
+        .filter-tag:hover {
+            background: #EFF6FF;
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        /* 解锁遮罩层样式 */
+        .lock-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(79, 70, 229, 0.95));
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .lock-content {
+            text-align: center;
+            color: white;
+            max-width: 500px;
+            padding: 40px;
+        }
+        .course-status {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .course-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+        }
+        .course-status.incomplete {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 解锁遮罩层 -->
+    <div id="lockOverlay" class="lock-overlay hidden">
+        <div class="lock-content">
+            <i class="fa fa-lock text-6xl mb-6 opacity-80"></i>
+            <h2 class="text-3xl font-bold mb-4">题库已锁定</h2>
+            <p class="text-lg opacity-90 mb-8">完成全部6门课程学习后解锁题库</p>
+            
+            <!-- 课程完成状态 -->
+            <div class="text-left mb-8">
+                <div id="courseStatusList" class="space-y-2">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <p class="text-sm opacity-80">请先完成所有课程学习</p>
+                <a href="index.html" class="inline-block bg-white text-primary font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-home mr-2"></i>返回首页
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <i class="fa fa-heartbeat text-primary text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-gray-800">陪诊师培训平台</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fa fa-home mr-1"></i>首页
+                    </a>
+                    <a href="course.html?id=1" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fa fa-book mr-1"></i>课程学习
+                    </a>
+                    <a href="exam.html" class="text-gray-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        <i class="fa fa-pencil mr-1"></i>在线考试
+                    </a>
+                    <span id="progressBadge" class="bg-primary/10 text-primary px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fa fa-check-circle mr-1"></i>进度: <span id="overallProgress">0</span>%
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 页面标题和搜索 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">
+                <i class="fa fa-th-large text-primary mr-3"></i>精选题库
+                <span class="text-lg font-normal text-gray-500 ml-2">共 <span id="totalCount">200</span> 道题目</span>
+            </h1>
+            
+            <!-- 搜索框 -->
+            <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+                <div class="relative">
+                    <i class="fa fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="搜索题目关键词..." 
+                           class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+                    <button id="clearSearch" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 筛选标签 -->
+            <div class="bg-white rounded-xl shadow-md p-4">
+                <!-- 课程筛选 -->
+                <div class="mb-4">
+                    <h3 class="text-sm font-medium text-gray-700 mb-3">
+                        <i class="fa fa-folder-open mr-2 text-primary"></i>按课程筛选
+                    </h3>
+                    <div class="flex flex-wrap gap-2" id="courseFilters">
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 tag-active" data-course="all">全部</button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-course="1">课程1：陪诊服务概述</button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-course="2">课程2：法律法规</button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-course="3">课程3：职业礼仪</button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-course="4">课程4：医疗常识</button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-course="5">课程5：服务流程</button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-course="6">课程6：急救技能</button>
+                    </div>
+                </div>
+                
+                <!-- 题型筛选 -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-700 mb-3">
+                        <i class="fa fa-filter mr-2 text-primary"></i>按题型筛选
+                    </h3>
+                    <div class="flex flex-wrap gap-2" id="typeFilters">
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 tag-active" data-type="all">全部</button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-type="single">
+                            <i class="fa fa-dot-circle-o mr-1"></i>单选题
+                        </button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-type="multiple">
+                            <i class="fa fa-check-square mr-1"></i>多选题
+                        </button>
+                        <button class="filter-tag px-4 py-2 rounded-full text-sm font-medium border border-gray-200 text-gray-600" data-type="judge">
+                            <i class="fa fa-exchange mr-1"></i>判断题
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-primary" id="filteredCount">200</div>
+                <div class="text-sm text-gray-500">当前显示</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-blue-500" id="singleCount">-</div>
+                <div class="text-sm text-gray-500">单选题</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-purple-500" id="multipleCount">-</div>
+                <div class="text-sm text-gray-500">多选题</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold text-green-500" id="judgeCount">-</div>
+                <div class="text-sm text-gray-500">判断题</div>
+            </div>
+        </div>
+
+        <!-- 题目列表 -->
+        <div id="questionsList" class="space-y-4">
+            <!-- 动态生成 -->
+        </div>
+
+        <!-- 加载更多 / 分页 -->
+        <div id="pagination" class="mt-8 flex justify-center">
+            <!-- 动态生成 -->
+        </div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="hidden text-center py-16">
+            <i class="fa fa-search text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-medium text-gray-500 mb-2">未找到匹配的题目</h3>
+            <p class="text-gray-400">请尝试调整筛选条件或搜索关键词</p>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">© 2024 陪诊师培训平台 | 专业 · 用心 · 陪伴</p>
+        </div>
+    </footer>
+
+    <!-- Toast提示 -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // 课程映射
+        const courseMap = {
+            '陪诊服务概述': '1',
+            '法律法规': '2',
+            '职业礼仪': '3',
+            '医疗常识': '4',
+            '服务流程': '5',
+            '急救技能': '6'
+        };
+        
+        const courseNames = {
+            '1': '陪诊服务概述',
+            '2': '法律法规',
+            '3': '职业礼仪',
+            '4': '医疗常识',
+            '5': '服务流程',
+            '6': '急救技能'
+        };
+
+        // 题型配置
+        const typeConfig = {
+            'single': { label: '单选题', color: 'bg-blue-100 text-blue-800', icon: 'fa-dot-circle-o' },
+            'multiple': { label: '多选题', color: 'bg-purple-100 text-purple-800', icon: 'fa-check-square' },
+            'judge': { label: '判断题', color: 'bg-green-100 text-green-800', icon: 'fa-exchange' }
+        };
+
+        // 全局变量
+        let allQuestions = [];
+        let filteredQuestions = [];
+        let currentCourse = 'all';
+        let currentType = 'all';
+        let currentSearch = '';
+        let currentPage = 1;
+        const pageSize = 20;
+
+        // DOM元素
+        const questionsList = document.getElementById('questionsList');
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
+        const courseFilters = document.getElementById('courseFilters');
+        const typeFilters = document.getElementById('typeFilters');
+        const pagination = document.getElementById('pagination');
+        const emptyState = document.getElementById('emptyState');
+        const lockOverlay = document.getElementById('lockOverlay');
+        const courseStatusList = document.getElementById('courseStatusList');
+
+        // 检查解锁状态
+        function checkUnlock() {
+            const progress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+            const allCourses = Object.keys(courseMap);
+            let completedCount = 0;
+            
+            // 生成课程状态列表
+            courseStatusList.innerHTML = allCourses.map(courseId => {
+                const courseData = progress[`course_${courseId}`];
+                const isCompleted = courseData && courseData.completed;
+                if (isCompleted) completedCount++;
+                
+                return `
+                    <div class="course-status ${isCompleted ? 'completed' : 'incomplete'}">
+                        <i class="fa ${isCompleted ? 'fa-check-circle text-secondary' : 'fa-circle-o text-white/50'} mr-3"></i>
+                        <span class="flex-1">课程${courseId}：${courseNames[courseId]}</span>
+                        <span class="text-sm ${isCompleted ? 'text-secondary' : 'text-white/50'}">
+                            ${isCompleted ? '已完成' : '未完成'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            // 如果所有课程都完成，显示题库
+            if (completedCount === allCourses.length) {
+                lockOverlay.classList.add('hidden');
+                init();
+            } else {
+                lockOverlay.classList.remove('hidden');
+            }
+        }
+
+        // 初始化
+        async function init() {
+            await loadQuestions();
+            setupEventListeners();
+            updateStats();
+        }
+
+        // 加载题库
+        async function loadQuestions() {
+            try {
+                const response = await fetch('./题库/questions.json');
+                const data = await response.json();
+                allQuestions = data.questions;
+                filteredQuestions = [...allQuestions];
+                renderQuestions();
+                updateStats();
+            } catch (error) {
+                console.error('加载题库失败:', error);
+                showToast('题库加载失败，请刷新页面重试');
+            }
+        }
+
+        // 设置事件监听
+        function setupEventListeners() {
+            // 搜索
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.trim();
+                clearSearch.classList.toggle('hidden', !currentSearch);
+                filterQuestions();
+            });
+
+            clearSearch.addEventListener('click', () => {
+                searchInput.value = '';
+                currentSearch = '';
+                clearSearch.classList.add('hidden');
+                filterQuestions();
+            });
+
+            // 课程筛选
+            courseFilters.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                
+                document.querySelectorAll('#courseFilters button').forEach(b => {
+                    b.classList.remove('tag-active');
+                    b.classList.add('text-gray-600');
+                });
+                btn.classList.add('tag-active');
+                btn.classList.remove('text-gray-600');
+                
+                currentCourse = btn.dataset.course;
+                filterQuestions();
+            });
+
+            // 题型筛选
+            typeFilters.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                
+                document.querySelectorAll('#typeFilters button').forEach(b => {
+                    b.classList.remove('tag-active');
+                    b.classList.add('text-gray-600');
+                });
+                btn.classList.add('tag-active');
+                btn.classList.remove('text-gray-600');
+                
+                currentType = btn.dataset.type;
+                filterQuestions();
+            });
+        }
+
+        // 筛选题目
+        function filterQuestions() {
+            filteredQuestions = allQuestions.filter(q => {
+                // 课程筛选
+                if (currentCourse !== 'all') {
+                    const qCourse = courseMap[q.course];
+                    if (qCourse !== currentCourse) return false;
+                }
+                
+                // 题型筛选
+                if (currentType !== 'all') {
+                    if (q.type !== currentType) return false;
+                }
+                
+                // 搜索筛选
+                if (currentSearch) {
+                    const searchLower = currentSearch.toLowerCase();
+                    return q.question.toLowerCase().includes(searchLower) ||
+                           q.explanation.toLowerCase().includes(searchLower);
+                }
+                
+                return true;
+            });
+
+            currentPage = 1;
+            renderQuestions();
+            updateStats();
+        }
+
+        // 渲染题目
+        function renderQuestions() {
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageQuestions = filteredQuestions.slice(start, end);
+
+            if (pageQuestions.length === 0) {
+                questionsList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                pagination.innerHTML = '';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            questionsList.innerHTML = pageQuestions.map(q => {
+                const typeInfo = typeConfig[q.type];
+                const courseNum = courseMap[q.course] || '?';
+                
+                // 格式化答案
+                let answerText = '';
+                if (q.type === 'single') {
+                    answerText = String.fromCharCode(65 + q.answer) + '. ' + q.options[q.answer];
+                } else if (q.type === 'multiple') {
+                    if (Array.isArray(q.answer)) {
+                        answerText = q.answer.map(a => String.fromCharCode(65 + a)).join('、');
+                    } else {
+                        answerText = q.answer;
+                    }
+                } else {
+                    answerText = q.answer === 0 ? '正确' : '错误';
+                }
+
+                // 渲染选项
+                let optionsHtml = '';
+                if (q.type === 'judge') {
+                    optionsHtml = `
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3 bg-gray-50 rounded-lg border-2 ${q.answer === 0 ? 'border-green-500 bg-green-50' : 'border-gray-200'}">
+                                <span class="font-medium">A. 正确</span>
+                                ${q.answer === 0 ? '<i class="fa fa-check text-green-500 ml-2"></i>' : ''}
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg border-2 ${q.answer === 1 ? 'border-green-500 bg-green-50' : 'border-gray-200'}">
+                                <span class="font-medium">B. 错误</span>
+                                ${q.answer === 1 ? '<i class="fa fa-check text-green-500 ml-2"></i>' : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    optionsHtml = q.options.map((opt, idx) => {
+                        const isAnswer = q.type === 'single' ? idx === q.answer : 
+                                        (Array.isArray(q.answer) && q.answer.includes(idx));
+                        return `
+                            <div class="p-3 bg-gray-50 rounded-lg border-2 ${isAnswer ? 'border-green-500 bg-green-50' : 'border-gray-200'}">
+                                <span class="font-medium">${String.fromCharCode(65 + idx)}. ${opt}</span>
+                                ${isAnswer ? '<i class="fa fa-check text-green-500 ml-2"></i>' : ''}
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                return `
+                    <div class="question-card bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-6">
+                            <!-- 题目头部 -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                        #${q.id}
+                                    </span>
+                                    <span class="${typeInfo.color} px-3 py-1 rounded-full text-sm font-medium">
+                                        <i class="fa ${typeInfo.icon} mr-1"></i>${typeInfo.label}
+                                    </span>
+                                    <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
+                                        ${courseNum ? '课程' + courseNum + '：' + (courseNames[courseNum] || '') : q.course || '未分类'}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- 题目内容 -->
+                            <h3 class="text-lg font-medium text-gray-800 mb-4">
+                                ${q.question}
+                            </h3>
+                            
+                            <!-- 选项/答案区域 -->
+                            <div class="space-y-2 mb-4">
+                                ${optionsHtml}
+                            </div>
+                            
+                            <!-- 解析 -->
+                            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                                <div class="flex items-start">
+                                    <i class="fa fa-lightbulb-o text-amber-500 mt-1 mr-3"></i>
+                                    <div>
+                                        <h4 class="font-medium text-amber-800 mb-1">答案解析</h4>
+                                        <p class="text-amber-700 text-sm">${q.explanation}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderPagination();
+        }
+
+        // 渲染分页
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredQuestions.length / pageSize);
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '<div class="flex items-center gap-2">';
+            
+            // 上一页
+            html += `<button onclick="goToPage(${currentPage - 1})" 
+                           class="px-4 py-2 rounded-lg border ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}"
+                           ${currentPage === 1 ? 'disabled' : ''}>
+                        <i class="fa fa-chevron-left"></i>
+                    </button>`;
+
+            // 页码
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            if (startPage > 1) {
+                html += `<button onclick="goToPage(1)" class="px-4 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-50">1</button>`;
+                if (startPage > 2) html += '<span class="px-2 text-gray-400">...</span>';
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button onclick="goToPage(${i})" 
+                               class="px-4 py-2 rounded-lg border ${i === currentPage ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}">
+                            ${i}
+                        </button>`;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += '<span class="px-2 text-gray-400">...</span>';
+                html += `<button onclick="goToPage(${totalPages})" class="px-4 py-2 rounded-lg border bg-white text-gray-700 hover:bg-gray-50">${totalPages}</button>`;
+            }
+
+            // 下一页
+            html += `<button onclick="goToPage(${currentPage + 1})" 
+                           class="px-4 py-2 rounded-lg border ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'}"
+                           ${currentPage === totalPages ? 'disabled' : ''}>
+                        <i class="fa fa-chevron-right"></i>
+                    </button>`;
+
+            html += '</div>';
+            pagination.innerHTML = html;
+        }
+
+        // 跳转页面
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredQuestions.length / pageSize);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderQuestions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allQuestions.length;
+            document.getElementById('filteredCount').textContent = filteredQuestions.length;
+            
+            const singles = filteredQuestions.filter(q => q.type === 'single').length;
+            const multiples = filteredQuestions.filter(q => q.type === 'multiple').length;
+            const judges = filteredQuestions.filter(q => q.type === 'judge').length;
+            
+            document.getElementById('singleCount').textContent = singles;
+            document.getElementById('multipleCount').textContent = multiples;
+            document.getElementById('judgeCount').textContent = judges;
+
+            // 更新全局进度
+            const progress = JSON.parse(localStorage.getItem('courseProgress') || '{}');
+            const allCourses = Object.keys(courseMap);
+            let completedCount = 0;
+            allCourses.forEach(id => {
+                if (progress[`course_${id}`]?.completed) completedCount++;
+            });
+            document.getElementById('overallProgress').textContent = Math.round((completedCount / allCourses.length) * 100);
+        }
+
+        // 显示Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        // 页面加载时检查解锁
+        document.addEventListener('DOMContentLoaded', checkUnlock);
+    </script>
+</body>
+</html>
